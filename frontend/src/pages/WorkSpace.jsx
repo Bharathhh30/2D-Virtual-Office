@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useFireBase } from "../context/FireBase";
 import socket from "../socket/socket";
+import { useNavigate } from "react-router-dom";
 
 function WorkSpace() {
     const { user, handleSignOut } = useFireBase();
@@ -9,6 +10,7 @@ function WorkSpace() {
     const [rooms, setRooms] = useState([]);
     const [inputRoomId, setInputRoomId] = useState("");
     const [error, setError] = useState(null);
+    const navigate = useNavigate();
 
     if (!user) {
         return <div>Loading....</div>;
@@ -68,18 +70,28 @@ function WorkSpace() {
     };
 
     const handleJoinRoom = () => {
-        if (inputRoomId) {
+        if (inputRoomId.trim()) {
             joinRoom(inputRoomId);
         } else {
-            alert("Please enter a room id");
+            alert("Please enter a Room ID");
         }
     };
 
     const handleExitRoom = () => {
-        localStorage.removeItem('joinedRoom');
-        setJoinedRoom(null);
-        setUsers([]);
-        socket.emit('exit-room', joinedRoom); // Notify the server that the user has exited
+        if (joinedRoom) {
+            socket.emit("exit-room", joinedRoom);
+            localStorage.removeItem("joinedRoom");
+            setJoinedRoom(null);
+            setUsers([]);
+        }
+    };
+
+    const handleEnterRoom = () => {
+        if (joinedRoom) {
+            navigate(`/room/${joinedRoom}`);
+        } else {
+            alert("Please join a room first!");
+        }
     };
 
     return (
@@ -92,21 +104,21 @@ function WorkSpace() {
             </div>
             <div className="p-3 flex flex-col">
                 <h2>Hello, {userName}!</h2>
-                <p>You are Beerozgaaar</p>
                 <p>Welcome to the Beerozgaar dashboard. Enjoy your workspaces here.</p>
+
                 <h3>Available Rooms:</h3>
                 <ul>
                     {rooms.map((room) => (
                         <li
                             key={room.id}
                             onClick={() => setInputRoomId(room.id)}
-                            style={{ cursor: "pointer" }}
+                            className="cursor-pointer"
                         >
                             {room.name} ({room.id})
                         </li>
                     ))}
                 </ul>
-                
+
                 <input
                     type="text"
                     placeholder="Enter Room ID"
@@ -115,15 +127,33 @@ function WorkSpace() {
                     className="p-2 border-2 w-96 rounded-md"
                 />
 
-                <button className="bg-amber-300 p-2 rounded-md w-24 mt-2 text-white" onClick={handleJoinRoom}>Join Room</button>
+                <button 
+                    className="bg-amber-300 p-2 rounded-md w-24 mt-2 text-white cursor-pointer" 
+                    onClick={handleJoinRoom}
+                >
+                    Join Room
+                </button>
 
-                {error && <p style={{ color: "red" }}>{error}</p>}
+                {error && <p className="text-red-500">{error}</p>}
+
+                {/* ENTER ROOM BUTTON */}
+                <button 
+                    className="bg-green-500 p-2 rounded-md w-24 mt-2 text-white cursor-pointer" 
+                    onClick={handleEnterRoom}
+                >
+                    Enter Room
+                </button>
 
                 {joinedRoom && (
                     <div>
                         <p>Joined Room: {joinedRoom}</p>
-                        <button onClick={handleExitRoom}>Exit Room</button>
-                        <h3 className="mt-4 text-xl font-bold">Users in Workspace:</h3>
+                        <button 
+                            className="bg-red-500 p-2 rounded-md w-24 mt-2 text-white cursor-pointer"
+                            onClick={handleExitRoom}
+                        >
+                            Exit Room
+                        </button>
+                        <h3 className="mt-4 text-xl font-bold">Users in Room:</h3>
                         <ul>
                             {users.map((user, index) => (
                                 <li key={user.socketId || index}>{user.name}</li>

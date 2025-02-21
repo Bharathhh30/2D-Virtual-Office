@@ -7,6 +7,7 @@ import SelectRole from "./components/SelectRole";
 import { useFireBase } from "./context/FireBase";
 import Workspace from "./pages/WorkSpace";
 import Error from "./pages/Error";
+import Room from "./pages/Room";
 
 function App() {
   const { handleRoleSelection, user, isLoading, userRole } = useFireBase();
@@ -31,7 +32,7 @@ function App() {
         <Route path="/" element={<Home />} />
         <Route path="/select-role" element={<SelectRole />} />
         <Route path="/auth" element={<AuthPage />} />
-
+        <Route path = 'room/1620f057-d788-4140-94fb-6ccc28ddaf5c' element = {<Room/>}/>
         {/* protection me hai e routes */}
         {/* <Route
           path="/createworkspace"
@@ -43,6 +44,7 @@ function App() {
         /> */}
         <Route path="/createworkspace" element={<CreateWork />} />
         <Route path ="/error" element={<Error/>} />
+        <Route path="/room/:roomId" element={<Room />} />
         <Route
           path="/workspace" // Or whatever path you want
           element={
